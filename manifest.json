@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+
+  "name": "Leet-Compete",
+  "description": "Chrome extension for competing in LeetCode contests",
+  "version": "0.1",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "leet-compete.html",
+    "default_title": "LeetCompete"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/contest/*"],
+      "js": ["jquery-1.11.3.min.js", "header-template.js", "run-test.js", "buttons.js", "leet-compete.js"]
+    }
+  ],
+  "permissions": [
+    "activeTab"
+  ]
+}
