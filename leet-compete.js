@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var solutionTemplate;
 var inputs;
@@ -6,14 +6,17 @@ var variables = [];
 var outputType = '';
 var funcName = '';
 var codeSelector = '.ace_content';
+var printExpected = '';
+var printAnswer = '';
 
 var regexBool = '(true|false|0|1)';
 var regexInt = '-?\\d+';
 var regexFloat = '(?:\\d+\\.)\\d+f?';
 var regexString = '\\".*\\"';
 var regexVector = '\\[.*\\]';
+var regexCapture = '\\[(.*)\\]';
 
-var regexVectorType = 'vector<.*>';
+var regexVectorType = 'vector<(.*)>';
 
 function isSupportedType(type) {
   var supportedTypes = ['bool', 'int', 'long long', 'float', 'double', 'string'];
@@ -26,28 +29,24 @@ function isSupportedType(type) {
   return false;
 }
 
-function error(text) {
-  console.error(text);
-  $('<div class="leet-compete-error"></div>')
-    .text(text)
-    .appendTo('.question-content')
-    .css({
-      'color': 'red'
-    });
-}
-
 function getVariables() {
   solutionTemplate = '';
   $('.ace_line').each(function(index, element) {
     solutionTemplate += $(element).text() + '\n';
   });
-  
-  solutionTemplate = solutionTemplate.replace(/\/\*\*(.|\n)*\*\/\n/g, '');
-  if (solutionTemplate.match(/^class Solution/) == null) {
-    error('Please reset the code block.');
+
+  if (solutionTemplate.match(/struct TreeNode/) != null) {
+    error('Problems with TreeNode are not yet supported.');
     return false;
   }
-  
+
+  solutionTemplate = solutionTemplate.replace(/\/\*\*(.|\n)*\*\/\n/g, '');
+  if (solutionTemplate.match(/^class Solution/) == null) {
+    error('Please reset the code block and refresh the page.');
+    return false;
+  }
+
+
   // Parse input variables
   var vars = solutionTemplate.match(/\((.*)\)/);
   if (vars == null) {
@@ -79,13 +78,26 @@ function getVariables() {
   }
   funcName = outputType[2];
   outputType = outputType[1];
+
+  if (outputType.match(regexVectorType) != null) {
+    // Output is vector
+    printExpected = ' << "{ ";\n';
+    printExpected += '  for (int i = 0; i < expected.size(); i++) {\n';
+    printExpected += '    cout << expected[i] << (i == (int)expected.size() - 1 ? " }\\n" : ", ");\n';
+    printExpected += '  }';
+    printAnswer = printExpected.replace(/expected/g, 'answer');
+  } else {
+    // Output is regular variable.
+    printExpected = ' << expected << endl;';
+    printAnswer = ' << answer << endl;';
+  }
   return true;
 }
 
 function getVector(variable, input) {
   var elementType = variable.type.match(/vector<\s*(.*)\s*>/)[1];
   var result = [];
-  result.push(elementType + ' vec[] = {' + input.match(/\[(.*)\]/i)[1] + '};');
+  result.push(elementType + ' vec[] = { ' + input.match(/\[(.*)\]/i)[1] + ' };');
   result.push(variable.name + '.assign(vec, vec + sizeof(vec) / sizeof(vec[0]));');
   return result;
 }
@@ -150,13 +162,16 @@ function getOutput(output) {
       break;
     case outputType.match(RegExp(regexVectorType, 'i')) != null:
       isVector = true;
+      value = output.match(regexCapture)[1];
       break;
   }
   var result = [];
   if (!isVector) {
     result.push('expected = ' + value + ';');
   } else {
-    error('getOutput exception'); // TODO
+    var vectorType = outputType.match(regexVectorType)[1];
+    result.push(vectorType + ' outVec[] = {' + value + '};');
+    result.push('expected.assign(outVec, outVec + sizeof(outVec) / sizeof(outVec[0]));');
   }
   return result;
 }
@@ -190,11 +205,13 @@ function process() {
   
   var finalCode = headerTemplate + '\n' + solutionTemplate + '\n';
   
-  runTest = runTest.replace("{{inputs}}", inputs);
-  runTest = runTest.replace("{{outputType}}", outputType);
-  runTest = runTest.replace("{{funcName}}", funcName);
-  runTest = runTest.replace("{{inputArgs}}", inputArgs.join(', '));
-  runTest = runTest.replace("{{outputType}}", outputType);
+  runTest = runTest.replace('{{inputs}}', inputs);
+  runTest = runTest.replace('{{outputType}}', outputType);
+  runTest = runTest.replace('{{funcName}}', funcName);
+  runTest = runTest.replace('{{inputArgs}}', inputArgs.join(', '));
+  runTest = runTest.replace('{{outputType}}', outputType);
+  runTest = runTest.replace('{{printExpected}}', printExpected);
+  runTest = runTest.replace('{{printAnswer}}', printAnswer);
   
   finalCode += runTest + '\n';
   

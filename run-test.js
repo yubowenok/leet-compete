@@ -7,8 +7,8 @@ bool runTest(int testNum, {{inputs}}, {{outputType}} expected) {
   delete sol;
   cout << "[ Test " << testNum << " ]" << endl;
   cout << "Execution time: " << double(endTime - startTime) / CLOCKS_PER_SEC << " seconds" << endl;
-  cout << "Expected: " << expected << endl;
-  cout << "Received: " << answer << endl;
+  cout << "Expected: "{{printExpected}}
+  cout << "Received: "{{printAnswer}}
   cout << "Result: ";
   if (double(endTime - startTime) / CLOCKS_PER_SEC >= 1) {
     cout << "Time limited exceeded" << endl;

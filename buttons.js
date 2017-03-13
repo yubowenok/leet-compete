@@ -11,6 +11,8 @@ function addCopyButton() {
       textarea[0].select();
       if (!document.execCommand('copy')) {
         error('Browser does not support direct copy. Please press copy key');
+      } else {
+        message('Code copied!');
       }
       textarea.hide();
     })

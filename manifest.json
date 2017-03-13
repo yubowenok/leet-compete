@@ -13,7 +13,14 @@
   "content_scripts": [
     {
       "matches": ["https://leetcode.com/contest/*"],
-      "js": ["jquery-1.11.3.min.js", "header-template.js", "run-test.js", "buttons.js", "leet-compete.js"]
+      "js": [
+        "jquery-1.11.3.min.js",
+        "header-template.js",
+        "run-test.js",
+        "message.js",
+        "buttons.js",
+        "leet-compete.js"
+      ]
     }
   ],
   "permissions": [
